@@ -1,0 +1,10 @@
+[project]
+name = "multistreamlab"
+version = "0.1.0"
+description = "MultiStreamLab is machine learning evaluation and visualization tool in the multiple data streams scenario."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.10.5",
+    "tornado>=6.5.2",
+]
