@@ -46,7 +46,7 @@ class Algorithm(Generic[X, Y]):
     - `labels`
     """
 
-    def fit(self, x: X, y: Y):
+    def fit(self, data: list[tuple[X, Y]]):
         """
         Train from scratch.
 
@@ -55,7 +55,7 @@ class Algorithm(Generic[X, Y]):
         """
         raise NotImplementedError("The `fit` method must be overrided.")
 
-    def partial_fit(self, x: X, y: Y, is_drift: list[bool] | None):
+    def partial_fit(self, data: list[tuple[X, Y]], is_drift: list[bool] | None):
         """
         Adapt to the concept drift.
 
@@ -66,7 +66,7 @@ class Algorithm(Generic[X, Y]):
         """
         raise NotImplementedError("The `partial_fit` method must be overrided.")
 
-    def score(self, x: X, y: Y) -> tuple[list[float], list[bool] | None]:
+    def score(self, data: list[tuple[X, Y]]) -> tuple[list[float], list[bool] | None]:
         """
         Evaluate the prediction results, and detect if concept drift occurs.
 

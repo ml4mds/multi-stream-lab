@@ -44,8 +44,9 @@ class DataStreamsLoader(Generic[X, Y]):
         """Retrieve the testing dataset."""
         start = self.trainset_size
         while start < len(self.datastreams):
-            stop = min(start + self.batch_size, len(self))
+            stop = min(start + self.batch_size, len(self.datastreams))
             yield self.datastreams[start:stop]
+            start += self.batch_size
 
 
 def _evaluate(
@@ -57,16 +58,16 @@ def _evaluate(
 ) -> Iterator[dict[str, str]]:
     """Evaluate the given algorithm on the given dataset."""
     data_loader = DataStreamsLoader(dataset, trainset_size, batch_size)
-    x, y = data_loader.train()
-    algorithm.fit(x, y)
+    data_train = data_loader.train()
+    algorithm.fit(data_train)
     window = deque()
-    for i, (x, y) in enumerate(data_loader.streams()):
+    for i, data_batch in enumerate(data_loader.streams()):
         # evaluate and adapt
-        acc, is_drift = algorithm.detect(x, y)
+        acc, is_drift = algorithm.score(data_batch)
         window.append((acc, is_drift))
         if len(window) > window_size:
             window.popleft()
-        algorithm.partial_fit(x, y, is_drift)
+        algorithm.partial_fit(data_batch, is_drift)
 
         # plot
         # TODO: add customized plot from algorithm
@@ -85,10 +86,9 @@ def _evaluate(
                 label=label
             )
             ymin, ymax = ax.get_ylim()
-            for _, drifts in window:
-                if drifts is not None:
-                    for drift in drifts:
-                        ax.vlines(drift, ymin, ymax, color="red")
+            for t, (_, drifts) in enumerate(window):
+                if drifts is not None and drifts[j]:
+                    ax.vlines(xmin + t, ymin, ymax, color="red", ls=":")
             fig.savefig(buffers[label], format="png")
         yield {
             label: b64encode(buffer.getbuffer()).decode("ascii")

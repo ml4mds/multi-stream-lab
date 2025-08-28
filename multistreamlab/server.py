@@ -2,6 +2,7 @@
 import json
 import tornado
 import tornado.websocket as ws
+from multistreamlab import DEFAULT_FRONTEND_PATH
 from multistreamlab.base import DataStreams, Algorithm
 from multistreamlab.evaluate import _evaluate
 
@@ -101,15 +102,15 @@ class ImageWebSocketHandler(ws.WebSocketHandler):
                     + self.algorithms[self._algorithm].labels()
                 self.write_message({
                     "type": "data",
-                    "data": labels
+                    "data": {"labels": labels}
                 })
             case "action":
                 match data["data"]:
                     case "start":
                         # TODO: execute the cpu-bound task in another thread to prevent blocking
                         for images in _evaluate(
-                            self._dataset,
-                            self._algorithm,
+                            self.datasets[self._dataset],
+                            self.algorithms[self._algorithm],
                             self.trainset_size,
                             self.batch_size,
                             self.window_size,
@@ -168,15 +169,21 @@ class MultiStreamLabServer:
     ):
         """Initialize a server."""
         self.server = tornado.web.Application([
-            (r"/", tornado.web.StaticFileHandler, {"path": "frontend"}),
-            (r"/api/options", OptionsHandler, (datasets, algorithms)),
-            (r"/ws", ImageWebSocketHandler, (
-                datasets,
-                algorithms,
-                trainset_size,
-                batch_size,
-                window_size,
-            )),
+            (r"/api/options", OptionsHandler, {
+                "datasets": datasets,
+                "algorithms": algorithms,
+            }),
+            (r"/ws", ImageWebSocketHandler, {
+                "datasets": datasets,
+                "algorithms": algorithms,
+                "trainset_size": trainset_size,
+                "batch_size": batch_size,
+                "window_size": window_size,
+            }),
+            (r"/(.*)", tornado.web.StaticFileHandler, {
+                "path": DEFAULT_FRONTEND_PATH,
+                "default_filename": "index.html",
+            }),
         ])
 
     def listen(self, port: int):
