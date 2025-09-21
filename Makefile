@@ -2,7 +2,7 @@ all: pip.complete multistreamlab/dist
 	touch all.complete
 
 pip.complete:
-	python3 -m pip install multistreamlab
+	uv sync
 	touch pip.complete
 
 multistreamlab/dist:
