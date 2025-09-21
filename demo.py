@@ -6,8 +6,6 @@ import numpy as np
 import pandas as pd
 from scipy.stats import mannwhitneyu
 from sklearn import linear_model
-import torch
-import torch.nn as nn
 from multistreamlab.base import DataStreams, Algorithm
 from multistreamlab.server import MultiStreamLabServer
 
