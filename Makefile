@@ -1,7 +1,7 @@
 all: pip.complete multistreamlab/dist
 	touch all.complete
 
-sync.temp:
+pip.complete:
 	python3 -m pip install multistreamlab
 	touch pip.complete
 
